@@ -19,6 +19,7 @@ jobs:
 
       - name: Create chroot environment
         run: |
+          chmod +x bootstrap.sh
           ./bootstrap.sh amd64 amd64
 
       - name: Copy build script into chroot
