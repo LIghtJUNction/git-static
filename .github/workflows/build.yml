@@ -35,4 +35,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: git_static
-          path: /tmp/chroot/root/git-static/git
+          path: /tmp/chroot/root/output/git
