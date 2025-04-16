@@ -46,4 +46,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: git_static
-          path: /tmp/git-static/bin/git
+          path: /tmp/git-static/
