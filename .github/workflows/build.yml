@@ -1,0 +1,37 @@
+name: Build Static Git Binary (chroot)
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v4
+
+      - name: Create chroot environment
+        run: |
+          ./bootstrap.sh amd64 amd64
+
+      - name: Copy build script into chroot
+        run: |
+          sudo cp build_git.sh /tmp/chroot/root/build_git.sh
+          sudo chroot /tmp/chroot /bin/bash -c "chmod +x /root/build_git.sh"
+
+      - name: Build Git in chroot
+        run: |
+          sudo chroot /tmp/chroot /bin/bash -c "/root/build_git.sh"
+
+      - name: Upload static Git binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: git_static
+          path: /tmp/chroot/root/git-static/git
