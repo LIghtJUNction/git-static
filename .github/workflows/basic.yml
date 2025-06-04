@@ -15,36 +15,49 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up build environment
-        run: |
-          sudo apt update
-          sudo apt install -y \
-            build-essential \
-            dh-autoreconf \
-            libcurl4-gnutls-dev \
-            libexpat1-dev \
-            gettext \
-            zlib1g-dev \
-            libssl-dev \
-            libncurses5-dev \
-            git
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
 
-      - name: Clone Git source
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Git binary in ARM64 container
         run: |
-          git clone https://github.com/git/git.git
-          cd git
-          make configure
-          ./configure --prefix=/tmp/git-static CFLAGS="-static" LDFLAGS="-static" NO_OPENSSL=1 NO_CURL=1 NO_EXPAT=1 NO_GETTEXT=1 NO_PERL=1 NO_PYTHON=1 NO_TCLTK=1
-          make -j$(nproc)
-          make install
+          docker run --rm --platform linux/arm64 \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            ubuntu:22.04 \
+            bash -c "
+              apt update && \
+              apt install -y \
+                build-essential \
+                dh-autoreconf \
+                libcurl4-gnutls-dev \
+                libexpat1-dev \
+                gettext \
+                zlib1g-dev \
+                libssl-dev \
+                libncurses5-dev \
+                git \
+                ca-certificates && \
+              git clone https://github.com/git/git.git && \
+              cd git && \
+              make configure && \
+              ./configure --prefix=/tmp/git-static CFLAGS='-static' LDFLAGS='-static' NO_OPENSSL=1 NO_CURL=1 NO_EXPAT=1 NO_GETTEXT=1 NO_PERL=1 NO_PYTHON=1 NO_TCLTK=1 && \
+              make -j\$(nproc) && \
+              make install && \
+              cp -r /tmp/git-static /workspace/
+            "
 
       - name: Upload static Git binary
         uses: actions/upload-artifact@v4
         with:
-          name: git_static
-          path: /tmp/git-static/
+          name: git_static_arm64
+          path: git-static/
