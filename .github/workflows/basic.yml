@@ -53,6 +53,7 @@ jobs:
               ./configure --prefix=/tmp/git-static CFLAGS='-static' LDFLAGS='-static' NO_OPENSSL=1 NO_CURL=1 NO_EXPAT=1 NO_GETTEXT=1 NO_PERL=1 NO_PYTHON=1 NO_TCLTK=1 && \
               make -j\$(nproc) && \
               make install && \
+              file git
               cp -r /tmp/git-static /workspace/
             "
 
