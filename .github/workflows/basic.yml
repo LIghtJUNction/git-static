@@ -1,6 +1,7 @@
 name: Build Static ARM64 Git Binary
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
